@@ -5,13 +5,23 @@
 
 module Square ( State(..)
 , Square(..)
+, markSquare
+, unmarkSquare
+, openSquare
 ) where
 
 import qualified Data.Char as DC
 
-data State = Closed | Opened | Marked  deriving(Enum, Eq, Show)
+data State = Closed | Open | Marked  deriving( Eq, Show )
 
--- data Position = Invalid | Position { posX :: Int, posY :: Int }
+data Square = Empty | Square { posX :: Int, posY :: Int , state :: State , mine :: Bool } deriving ( Show, Eq )
 
-data Square = Square { posX :: Int, posY :: Int , state :: State , mine :: Bool } deriving (Show, Eq)
--- data Square = Empty | Square { position :: Position, state :: State} deriving (Show, Eq)
+markSquare :: Square -> Square
+markSquare   ( Square a b c d )        = ( Square a b Marked d )
+
+unmarkSquare :: Square -> Square
+unmarkSquare ( Square a b c d )        = ( Square a b Closed d )
+
+openSquare :: Square -> Square
+openSquare ( Square a b Closed True )  = ( Square a b Open True  ) -- EXPLODE CORACAO NA MAIOR FELICIDADE
+openSquare ( Square a b Closed False ) = ( Square a b Open False )

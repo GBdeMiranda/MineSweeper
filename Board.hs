@@ -10,7 +10,6 @@ module Board ( Board(..)
 , oneForMine
 , createBoard
 , showBoard
-, modifySquare
 , modifyRow
 , modifyMatrix
 ) where
@@ -24,7 +23,7 @@ data Board = Board { matrix :: [[Sq.Square]] , dimX :: Int , dimY :: Int }
 
 getSquare :: Board -> Int -> Int -> Sq.Square
 getSquare ( Board theMatrix sizeX sizeY ) x y  
-    | (x > 0 && x <= sizeX) && (y > 0 && y <= sizeY) = (theMatrix!!x)!!y
+    | ((x-1) >= 0 && (x-1) < sizeX) && ( (y-1) >= 0 && (y-1) < sizeY) = (theMatrix!!(x-1))!!(y-1)
     | otherwise    = Sq.Empty
 
 oneForMine :: Sq.Square-> Int
@@ -38,21 +37,15 @@ createBoard (sizeX,sizeY) randomSeed numberOfMines =
 
 showBoard :: Board -> String
 showBoard theBoard@( Board theMatrix sizeX sizeY ) =
-    foldr (\row b -> auxShow theBoard sizeY (theMatrix!!row) ++ b) "\n   " [0..sizeX-1]
-        where auxShow theBoard sizeList theLine = foldr (\col a -> (showSquare theBoard (theLine!!col)) ++ a) " \n" [0..sizeList-1]
-
-
-modifySquare ::  Char -> Sq.Square -> Sq.Square
-modifySquare '+' square = Sq.markSquare square
-modifySquare '-' square = Sq.unmarkSquare square
-modifySquare '_' square = Sq.openSquare square
+    foldr (\row b -> auxShow row theBoard sizeY (theMatrix!!row) ++ b) 
+        ("   " ++ ( DL.intersperse ' '  (take sizeY (['a'..'z']++['A'..'Z']) ) ) ++ " \n" ) [sizeX-1,(sizeX-2)..0] -- ++ map (\x -> ['A', x] ) ['A'..'Z'] ++ map (\x -> ['B', x] ) ['A'..'Z'] ) ) ) 
+            where auxShow indexRow theBoard sizeList theLine = [DC.intToDigit ( div (indexRow+1) 10 ), DC.intToDigit ( mod (indexRow+1) 10 ) ] ++ foldr (\col a -> (showSquare theBoard (theLine!!col)) ++ a) " \n" [0..sizeList-1]
 
 modifyRow :: Char -> [Sq.Square] -> Int -> [Sq.Square]
-modifyRow command row index = take index row ++ [ (modifySquare command (row!!index) ) ] ++ drop (index+1) row
+modifyRow command row indexY = take indexY row ++ [ (Sq.modifySquare command (row!!indexY) ) ] ++ drop (indexY+1) row
 
 modifyMatrix :: Char -> [[Sq.Square]] -> Int -> Int -> [[Sq.Square]]
-modifyMatrix command matrix posX posY = take posX matrix ++ [ (modifyRow command (matrix!!posX) posY) ] ++ drop (posX+1) matrix
-
+modifyMatrix command matrix posX posY = take (posX-1) matrix ++ [ (modifyRow command (matrix!!(posX-1)) posY) ] ++ drop posX matrix
 
 -- ==========================================================================================================================================================================================
 -- Should be in the Square module, but it would form a cycle ================================================================================================================================
@@ -61,9 +54,9 @@ mineCounter :: Board -> Sq.Square -> Int
 mineCounter theBoard (Sq.Square posX posY _ _ ) = oneForMine (getSquare theBoard (posX-1) posY) + oneForMine (getSquare theBoard (posX+1) posY) + oneForMine (getSquare theBoard posX (posY-1) ) + oneForMine (getSquare theBoard posX (posY+1) )
 
 showSquare :: Board -> Sq.Square -> String
-showSquare _ (Sq.Square _ _ Sq.Closed _ ) = " *" 
+showSquare _ (Sq.Square _ _ Sq.Closed _ ) = " *"
 showSquare theBoard theSquare@(Sq.Square _ _ Sq.Open _ ) = ([' ', (DC.intToDigit (mineCounter theBoard theSquare) )] :: String ) -- Devia ser o numero de vizinhos com bombas
-
+showSquare _ (Sq.Square _ _ Sq.Marked _ ) = " B"
 -- ==========================================================================================================================================================================================
 -- ==========================================================================================================================================================================================
 -- ==========================================================================================================================================================================================

@@ -8,6 +8,7 @@ module Square ( State(..)
 , markSquare
 , unmarkSquare
 , openSquare
+, modifySquare
 ) where
 
 import qualified Data.Char as DC
@@ -23,5 +24,10 @@ unmarkSquare :: Square -> Square
 unmarkSquare ( Square a b c d )        = ( Square a b Closed d )
 
 openSquare :: Square -> Square
-openSquare ( Square a b Closed True )  = ( Square a b Open True  ) -- EXPLODE CORACAO NA MAIOR FELICIDADE
-openSquare ( Square a b Closed False ) = ( Square a b Open False )
+openSquare ( Square a b c True )  = error "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n MINA ATIVADA! \n VOCÊ PERDEU! \n\n\n\n\n\n\n"
+openSquare ( Square a b c False ) = ( Square a b Open False )
+
+modifySquare ::  Char -> Square -> Square
+modifySquare '+' square = markSquare square
+modifySquare '-' square = unmarkSquare square
+modifySquare '_' square = openSquare square
